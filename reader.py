@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 
 CYC_TYPES = {'charge', 'discharge', 'cycle'}
 RATES = np.array([1/160, 1/80, 1/40, 1/20, 1/10, 1/5, 1/3, 1/2, 1, 2, 3, 4, 5])
-C_RATES = ['C/160', 'C/80', 'C/40', 'C/20', 'C/10', 'C/5', 'C/3', 'C/2', '1C', '2C', '3C', '4C', '5C']
+C_RATES = ['C/160', 'C/80', 'C/40', 'C/20', 'C/10', 'C/5', 'C/4', 'C/3', 'C/2', '1C', '2C', '3C', '4C', '5C']
 
 class ParseNeware():
 
