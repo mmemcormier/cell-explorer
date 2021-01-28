@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 
 CYC_TYPES = {'charge', 'discharge', 'cycle'}
-RATES = np.array([1/160, 1/80, 1/40, 1/20, 1/10, 1/5, 1/3, 1/2, 1, 2, 3, 4, 5])
+RATES = np.array([1/160, 1/80, 1/40, 1/20, 1/10, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5])
 C_RATES = ['C/160', 'C/80', 'C/40', 'C/20', 'C/10', 'C/5', 'C/4', 'C/3', 'C/2', '1C', '2C', '3C', '4C', '5C']
 
 class ParseNeware():
@@ -39,11 +39,11 @@ class ParseNeware():
         rlabels = reclabels.strip().split()
 
         cyclnlen = len(clabels)
-        print('Found {} cycle labels.'.format(cyclnlen))
+#        print('Found {} cycle labels.'.format(cyclnlen))
         steplnlen = len(slabels)
-        print('Found {} step labels.'.format(steplnlen))
+#        print('Found {} step labels.'.format(steplnlen))
         reclnlen = len(rlabels)
-        print('Found {} record labels.'.format(reclnlen))
+#        print('Found {} record labels.'.format(reclnlen))
 
         # Parse out units from column labels and create dictionary of units
         # for cycle, step, and record data.
@@ -115,19 +115,31 @@ class ParseNeware():
         # Separate cycle, step, and record data and write to 
         # file (needs to be changed to tmpfile) to be read 
         # in as DataFrame with inferred dtypes.
+        cyc_nlws = len(lines[0]) - len(lines[0].lstrip())
+        step_nlws = len(lines[1]) - len(lines[1].lstrip())
+        rec_nlws = len(lines[2]) - len(lines[2].lstrip())
         for line in lines[3:]:
             l = line.strip().split()
-            if len(l) >= cyclnlen:
+            nlws = len(line) - len(line.lstrip())
+            if nlws == cyc_nlws:
                 cycnum = l[0]
-#                cyc.append(l)
                 cyc.append(line)
-            elif len(l) >= steplnlen:
+
+            elif nlws == step_nlws: 
                 stepnum = l[0]
-#                step.append([cycnum] + l)
                 step.append('{0}{1}'.format(cycnum, line))
+
             else:
-#                rec.append([cycnum, stepnum] + l)
-                rec.append('{0}\t{1}{2}'.format(cycnum, stepnum, line))
+                rec.append('{0}\t{1}{2}'.format(cycnum, stepnum, line[1:]))
+
+#            if len(l) == cyclnlen:
+#                cycnum = l[0]
+#                cyc.append(line)
+#            elif len(l) == steplnlen:
+#                stepnum = l[0]
+#                step.append('{0}{1}'.format(cycnum, line))
+#            else:
+#                rec.append('{0}\t{1}{2}'.format(cycnum, stepnum, line))
         
         with open('cyc.dat', 'w') as f:
             for l in cyc:
@@ -158,9 +170,13 @@ class ParseNeware():
         dis_rates = []
         dis_crates = []
         cyc_id, dcap = self.get_discap(specific=False)
-        ref_cap = np.amax(dcap)
+#        ref_cap = np.amax(dcap)
+        max_inds = np.argpartition(dcap, -5)[-5:]
+        ref_cap = np.sum(dcap[max_inds]) / 5
         for i in range(ncyc):
             cycle = self.rec.loc[self.rec['Cycle_ID'] == cycnums[i]]
+#            print(cycle.columns)
+#            print(cycle['Record_ID'])
             stepnums = cycle['Step_ID'].unique()
 
             chg = cycle.loc[cycle['Step_ID'] == stepnums[0]]
@@ -222,7 +238,7 @@ class ParseNeware():
             self.recunits['Voltage'] = 'V'
 
         # Convert Capacity_Density to mAh/g from mAh/kg. Unit label can be wrong.
-        cyc2_df = self.rec.loc[self.rec['Cycle_ID'] == 2]
+        cyc2_df = self.rec.loc[self.rec['Cycle_ID'] == 3]
         max_cap = cyc2_df['Capacity_Density'].values
         if np.amax(max_cap) > 1000:
             self.rec['Capacity_Density'] = self.rec['Capacity_Density'] / 1000
@@ -312,8 +328,9 @@ class ParseNeware():
 
     def get_deltaV(self, normcyc=None, cycnums=None):
         '''
-        Return the difference between average charge and discharge voltages as output by Neware.
-        Should also have the functionality to compute it here.
+        Return the difference between average charge and discharge voltages
+        computed by average value theorem (integrate V-Q)
+        NOTE: This still needs work. Crashes if V-Q curve data is too noisy. 
         '''
         if cycnums is not None:
             cycle_nums = cycnums
@@ -350,7 +367,7 @@ class ParseNeware():
 
 #        df = pd.DataFrame(data={'Cycle_ID': cycnums, 'Delta_V': dV})
 #        df.to_csv(path_or_buf=dVfile, index=False)
-        print(bad_inds)
+#        print(bad_inds)
         
         if normcyc is not None:
             return cycle_nums, dV/dV[normcyc]
