@@ -14,7 +14,7 @@ C_RATES = ['C/160', 'C/80', 'C/40', 'C/20', 'C/10', 'C/5', 'C/4', 'C/3', 'C/2', 
 
 class ParseNeware():
 
-    def __init__(self, newarefile, rates=None):
+    def __init__(self, newarefile, ref_cap=None):
         '''parse raw neware datafile into cycle, step, and record data\
            and put into pd df'''
 
@@ -171,8 +171,9 @@ class ParseNeware():
         dis_crates = []
         cyc_id, dcap = self.get_discap(specific=False)
 #        ref_cap = np.amax(dcap)
-        max_inds = np.argpartition(dcap, -5)[-5:]
-        ref_cap = np.sum(dcap[max_inds]) / 5
+        if ref_cap is None:
+            max_inds = np.argpartition(dcap, -5)[-5:]
+            ref_cap = np.sum(dcap[max_inds]) / 5
         for i in range(ncyc):
             cycle = self.rec.loc[self.rec['Cycle_ID'] == cycnums[i]]
 #            print(cycle.columns)
