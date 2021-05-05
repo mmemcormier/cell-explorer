@@ -14,13 +14,19 @@ C_RATES = ['C/160', 'C/80', 'C/40', 'C/20', 'C/10', 'C/5', 'C/4', 'C/3', 'C/2', 
 
 class ParseNeware():
 
-    def __init__(self, newarefile, ref_cap=None):
+    def __init__(self, newarefile, all_lines=None, ref_cap=None):
         '''parse raw neware datafile into cycle, step, and record data\
            and put into pd df'''
 
-        self.newarefile = newarefile[:-4]
-        with open(newarefile, 'r', encoding='unicode_escape') as f:
-            lines = f.readlines()
+        if all_lines is not None:
+            lines = []
+            self.newarefile = newarefile
+            for line in all_lines:
+                lines.append(line.decode('unicode_escape'))
+        else:
+            self.newarefile = newarefile[:-4]
+            with open(newarefile, 'r', encoding='unicode_escape') as f:
+                lines = f.readlines()
     
         # Replace single space between words with "_" to create column labels.
         cyclabels = re.sub(r'(\w+) (\w+)', r'\1_\2', lines[0])
