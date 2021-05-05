@@ -213,6 +213,8 @@ class ParseNeware():
         self.step['C_rate'] = step_rates
         print('Found charge C-rates: {}'.format(chg_crates))
         print('Found discharge C-rates: {}'.format(dis_crates))
+        self.chg_crates = chg_crates
+        self.dis_crates = dis_crates
 
 
 
@@ -249,12 +251,28 @@ class ParseNeware():
         max_cap = cyc2_df['Capacity_Density'].values
         if np.amax(max_cap) > 1000:
             self.rec['Capacity_Density'] = self.rec['Capacity_Density'] / 1000
+            self.cyc['Specific_Capacity-DChg'] = self.cyc['Specific_Capacity-DChg'] / 1000  
         if self.recunits['Capacity_Density'] == 'mAh/kg':
             self.recunits['Capacity_Density'] = 'mAh/g'
 
     # The following set of functions are designed to be intuitive 
     # for people in the lab that want to get particular information
     # from cycling data.
+
+    def get_rates(self, cyctype='cycle'):
+    
+        if cyctype not in CYC_TYPES:
+            raise ValueError('cyctype must be one of {0}'.format(CYC_TYPES))
+        if cyctype == 'charge':
+            return self.chg_crates
+        elif cyctype == 'discharge':
+            return self.dis_crates
+        elif cyctype == 'cycle':
+            rates = self.chg_crates
+            for r in self.dis_crates:
+                if r not in rates:
+                    rates.append(r)
+            return rates
 
     def get_ncyc(self):
         '''
