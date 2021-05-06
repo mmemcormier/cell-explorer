@@ -12,12 +12,14 @@ import numpy as np
 import shutil as sh
 import os
 import matplotlib.pyplot as plt
+os.environ['MPLCONFIGDIR'] = ".matplotlib"
 import matplotlib
 
 cfgdir = matplotlib.get_configdir()
-cwd = os.getcwd()
-sh.copy("{}/mpl_styles/grapher.mplstyle".format(cwd),
-        "{}/stylelib/grapher.mplstyle".format(cfgdir))
+st.write(cfgdir)
+#cwd = os.getcwd()
+#sh.copy("{}/mpl_styles/grapher.mplstyle".format(cwd),
+#        "{}/stylelib/grapher.mplstyle".format(cfgdir))
 
 
 st.write("""
