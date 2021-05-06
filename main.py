@@ -9,10 +9,13 @@ Created on Wed May  5 11:05:20 2021
 from reader import ParseNeware
 import streamlit as st
 import numpy as np
+import shutil as sh
 import matplotlib.pyplot as plt
 import matplotlib
 
-st.write("{}".format(matplotlib.get_configdir()))
+cfgdir = matplotlib.get_configdir()
+sh.copy("mpl_styles/grapher.style",
+        "{}/stylelib/grapher.style".format(cfgdir))
 
 
 st.write("""
