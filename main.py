@@ -12,7 +12,7 @@ import numpy as np
 import shutil as sh
 import os
 import matplotlib.pyplot as plt
-os.environ['MPLCONFIGDIR'] = ".matplotlib"
+os.environ['MPLCONFIGDIR'] = "./.matplotlib"
 import matplotlib
 
 cfgdir = matplotlib.get_configdir()
