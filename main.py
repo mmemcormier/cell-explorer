@@ -10,6 +10,9 @@ from reader import ParseNeware
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+
+st.write("{}".format(matplotlib.get_configdir()))
 
 
 st.write("""
