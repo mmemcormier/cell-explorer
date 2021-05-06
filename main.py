@@ -15,9 +15,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 cfgdir = matplotlib.get_configdir()
-#sh.copy("mpl_styles/grapher.style",
-#        "{}/stylelib/grapher.style".format(cfgdir))
-st.write(os.getcwd())
+cwd = os.getcwd()
+sh.copy("{}/mpl_styles/grapher.style".format(cwd)),
+        "{}/stylelib/grapher.style".format(cfgdir))
 
 
 st.write("""
