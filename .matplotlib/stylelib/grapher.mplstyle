@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+
+
+# FONT
+
+font.family : sans-serif
+font.sans-serif : Arial
+font.weight : bold
+font.size : 14
+
+
+# AXES
+
+axes.linewidth : 1.5
+axes.labelsize : large
+axes.labelweight : bold
+axes.titlesize : large
+
+axes.prop_cycle : cycler('color', ['black', 'blue', 'red', 'lime', 'darkorange', 'slategrey', 'dodgerblue'])
+
+
+# TICKS
+
+
+xtick.major.width : 1.5
+xtick.minor.width : 1.25
+xtick.major.size : 4.5
+xtick.minor.size : 3.0
+xtick.top : True
+xtick.direction : in
+xtick.minor.visible : True
+
+ytick.major.width : 1.5
+ytick.minor.width : 1.25
+ytick.major.size : 4.5
+ytick.minor.size : 3.0
+ytick.right : True
+ytick.direction : in
+ytick.minor.visible : True
+
+# LEGEND
+
+legend.framealpha : 0.8
+legend.edgecolor : 1.0
+legend.fancybox : False
+
+# FIGURES
+
+figure.autolayout : True
+
+# SAVING FIGURES
+
+savefig.dpi : 120
+#savefig.bbox : tight
