@@ -10,12 +10,14 @@ from reader import ParseNeware
 import streamlit as st
 import numpy as np
 import shutil as sh
+import os
 import matplotlib.pyplot as plt
 import matplotlib
 
 cfgdir = matplotlib.get_configdir()
-sh.copy("mpl_styles/grapher.style",
-        "{}/stylelib/grapher.style".format(cfgdir))
+#sh.copy("mpl_styles/grapher.style",
+#        "{}/stylelib/grapher.style".format(cfgdir))
+st.write(os.getcwd())
 
 
 st.write("""
