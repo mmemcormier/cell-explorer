@@ -2,4 +2,4 @@ pandas
 numpy
 scipy
 matplotlib
-bokeh
+bokeh==2.2.2
