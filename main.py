@@ -8,15 +8,18 @@ Created on Wed May  5 11:05:20 2021
 
 from reader import ParseNeware
 import streamlit as st
+from bokeh.plotting import figure
+import bokeh.palettes as bp
+from bokeh.io import curdoc
 import numpy as np
 import shutil as sh
 import os
 import matplotlib.pyplot as plt
-os.environ['MPLCONFIGDIR'] = "./.matplotlib"
+#os.environ['MPLCONFIGDIR'] = "./.matplotlib"
 import matplotlib
 
-cfgdir = matplotlib.get_configdir()
-st.write(cfgdir)
+#cfgdir = matplotlib.get_configdir()
+#st.write(cfgdir)
 #cwd = os.getcwd()
 #sh.copy("{}/mpl_styles/grapher.mplstyle".format(cwd),
 #        "{}/stylelib/grapher.mplstyle".format(cfgdir))
@@ -67,39 +70,55 @@ if fdata is not None:
     #cycnums = np.arange(cyc_range[0], cyc_range[1])
     #st.write("Cycle numbers", cycnums)
     cmap = st.sidebar.selectbox("Color pallette",
-                                ('Default', 'viridis', 'rainbow'))
+                                ('Default', 'viridis', 'cividis'))
     if cmap == 'Default':
         avail_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
         colors = avail_colors*int(num_cycs/len(avail_colors) + 1)
-    else:
-        colors = plt.get_cmap(cmap)(np.linspace(0,1,num_cycs))
+    elif cmap == 'viridis':
+        colors = bp.viridis(num_cycs)
+    elif cmap == 'cividis':
+        colors = bp.cividis(num_cycs)
+        
+    #else:
+    #    colors = plt.get_cmap(cmap)(np.linspace(0,1,num_cycs))
         
     smooth = st.sidebar.slider("dQ/dV moving average window width", 0, 10)
     if smooth == 0:
         smooth = None
                                  
+#    with plt.style.context('grapher'):
+#        fig, ax = plt.subplots(figsize=(5,4))
+    #curdoc().theme = 'dark_minimal' # not working
+    p = figure(plot_width=600, plot_height=400,
+               x_axis_label='Cycle Number',
+               y_axis_label='Capacity (mAh)')
     
-    with plt.style.context('grapher'):
-        fig, ax = plt.subplots(figsize=(5,4))
-        
-        if plot_opts == 'V-Q':
-            for i in range(len(cycnums)):
-                x, y = nd.get_vcurve(cycnum=cycnums[i])
-                ax.plot(x, y, color=colors[i])
-            ax.set_xlabel('Capacity (mAh)')
-            ax.set_ylabel('Voltage (V)')
-        elif plot_opts == 'dQ/dV':
-            for i  in range(len(cycnums)):
-                x, y = nd.get_dQdV(cycnum=cycnums[i], avgstride=smooth)
-                ax.plot(x, y, color=colors[i])
-            ax.set_xlabel('Voltage (V)')
-            ax.set_ylabel('dQ/dV (mAh/V)')
-        elif plot_opts == 'Discharge capacity':
-            x, y = nd.get_discap()
-            ax.plot(x, y, "o")
-            ax.set_xlabel('Cycle Number')
-            ax.set_ylabel('Specific Capacity (mAh/g)')
+    if plot_opts == 'V-Q':
+        for i in range(len(cycnums)):
+            x, y = nd.get_vcurve(cycnum=cycnums[i])
+            p.xaxis.axis_label = 'Capacity (mAh)'
+            p.yaxis.axis_label = 'Voltage (V)'
+            p.line(x, y, color=colors[i], line_width=2.0)
+            #ax.plot(x, y, color=colors[i])
+        #ax.set_xlabel('Capacity (mAh)')
+        #ax.set_ylabel('Voltage (V)')
+    elif plot_opts == 'dQ/dV':
+        for i  in range(len(cycnums)):
+            x, y = nd.get_dQdV(cycnum=cycnums[i], avgstride=smooth)
+            p.xaxis.axis_label = 'Voltage (V)'
+            p.yaxis.axis_label = 'dQ/dV (mAh/V)'
+            p.line(x,y, color=colors[i], line_width=2.0)
+            #ax.plot(x, y, color=colors[i])
+        #ax.set_xlabel('Voltage (V)')
+        #ax.set_ylabel('dQ/dV (mAh/V)')
+    elif plot_opts == 'Discharge capacity':
+        x, y = nd.get_discap()
+        p.circle(x, y, size=4, color="black", alpha=0.75)
+        #ax.plot(x, y, "o")
+        #ax.set_xlabel('Cycle Number')
+        #ax.set_ylabel('Specific Capacity (mAh/g)')
 
         #ax.plot(x, y)
         
-    st.pyplot(fig)
+    #st.pyplot(fig)
+    st.bokeh_chart(p, use_container_width=True)
