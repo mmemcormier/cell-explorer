@@ -8,12 +8,13 @@ Created on Wed May  5 11:05:20 2021
 
 from reader import ParseNeware
 import streamlit as st
-from bokeh.plotting import figure
+from bokeh.plotting import figure, save
 import bokeh.palettes as bp
-from bokeh.io import curdoc
+from bokeh.io import curdoc, export_png
 import numpy as np
-import shutil as sh
-import os
+from pathlib import Path
+#import shutil as sh
+#import os
 import matplotlib.pyplot as plt
 #os.environ['MPLCONFIGDIR'] = "./.matplotlib"
 import matplotlib
@@ -89,7 +90,7 @@ if fdata is not None:
 #    with plt.style.context('grapher'):
 #        fig, ax = plt.subplots(figsize=(5,4))
     #curdoc().theme = 'dark_minimal' # not working
-    p = figure(plot_width=600, plot_height=400,
+    p = figure(plot_width=800, plot_height=400,
                x_axis_label='Cycle Number',
                y_axis_label='Capacity (mAh)')
     
@@ -122,3 +123,13 @@ if fdata is not None:
         
     #st.pyplot(fig)
     st.bokeh_chart(p, use_container_width=True)
+    rel_path = st.text_input("Save figure to: C://")
+    savepng_button = st.button("Save figure to png!")
+    savehtml_button = st.button("Save figure to html! (interactive plot)")
+
+    home_path = Path("/home/mmemc")
+    fig_path = home_path / rel_path
+    if savehtml_button is True:
+        save(p, filename="{}.html".format(fig_path))
+    if savepng_button is True:
+        export_png(p, filename="{}.png".format(fig_path))
