@@ -3,3 +3,4 @@ numpy
 scipy
 matplotlib
 bokeh==2.2.2
+selenium
