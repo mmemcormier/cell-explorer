@@ -25,6 +25,14 @@ import matplotlib
 #sh.copy("{}/mpl_styles/grapher.mplstyle".format(cwd),
 #        "{}/stylelib/grapher.mplstyle".format(cfgdir))
 
+# HACK This only works when we've installed streamlit with pipenv, so the
+# permissions during install are the same as the running process
+STREAMLIT_STATIC_PATH = Path(st.__path__[0]) / 'static'
+# We create a downloads directory within the streamlit static asset directory
+# and we write output files to it
+DOWNLOADS_PATH = (STREAMLIT_STATIC_PATH / "downloads")
+if not DOWNLOADS_PATH.is_dir():
+    DOWNLOADS_PATH.mkdir()
 
 st.write("""
          # Let's plot some Neware data!
@@ -34,7 +42,8 @@ fdata = st.file_uploader("Load your Neware file here!")
 
 @st.cache(persist=True)
 def read_data(uploaded_bytes, cell_id):
-    return ParseNeware(cell_id, all_lines=uploaded_bytes)
+    return ParseNeware(cell_id, all_lines=uploaded_bytes,
+                       tmppath=DOWNLOADS_PATH)
 
 @st.cache(persist=True)
 def voltage_curves(cycnums, active_mass=None):

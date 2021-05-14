@@ -5,6 +5,7 @@ import pandas as pd
 from os import path
 from scipy.integrate import simps
 import re
+from pathlib import Path
 from argparse import ArgumentParser
 
 
@@ -14,7 +15,7 @@ C_RATES = ['C/160', 'C/80', 'C/40', 'C/20', 'C/10', 'C/5', 'C/4', 'C/3', 'C/2', 
 
 class ParseNeware():
 
-    def __init__(self, newarefile, all_lines=None, ref_cap=None):
+    def __init__(self, newarefile, all_lines=None, ref_cap=None, tmppath=''):
         '''parse raw neware datafile into cycle, step, and record data\
            and put into pd df'''
 
@@ -147,19 +148,23 @@ class ParseNeware():
 #            else:
 #                rec.append('{0}\t{1}{2}'.format(cycnum, stepnum, line))
         
-        with open('cyc.dat', 'w') as f:
+        tmppath = Path(tmppath)
+        #with open('cyc.dat', 'w') as f:
+        with open(tmppath / 'cyc.dat', 'w') as f:
             for l in cyc:
                 f.write(l)
-        with open('step.dat', 'w') as f:
+        #with open('step.dat', 'w') as f:
+        with open(tmppath / 'step.dat', 'w') as f:
             for l in step:
                 f.write(l)
-        with open('rec.dat', 'w') as f:
+        #with open('rec.dat', 'w') as f:
+        with open(tmppath / 'rec.dat', 'w') as f:
             for l in rec:
                 f.write(l)
 
-        self.cyc = pd.read_csv('cyc.dat', sep='\t+', header=0, engine='python')
-        self.step = pd.read_csv('step.dat', sep='\t+', header=0, engine='python')
-        self.rec = pd.read_csv('rec.dat', sep='\t+', header=0, engine='python')
+        self.cyc = pd.read_csv(tmppath / 'cyc.dat', sep='\t+', header=0, engine='python')
+        self.step = pd.read_csv(tmppath / 'step.dat', sep='\t+', header=0, engine='python')
+        self.rec = pd.read_csv(tmppath / 'rec.dat', sep='\t+', header=0, engine='python')
 
         nstep = self.step['Step_ID'].values[-1]
 #        self.step['C_Rate'] = ['N/A']*nstep
