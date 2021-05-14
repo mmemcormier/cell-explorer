@@ -317,7 +317,7 @@ class ParseNeware():
 
         return selected_cycs
 
-    def get_discap(self, normcyc=None, specific=True):
+    def get_discap(self, normcyc=None, specific=False):
         '''
         Returns the cycle numbers and discharge capacity
         '''
@@ -333,8 +333,9 @@ class ParseNeware():
 
         else:
             return self.cyc['Cycle_ID'], self.cyc[caplabel]
+            #return self.cyc['Cycle_ID'], self.cyc['Cap_DChg']
 
-    def get_chgcap(self, normcyc=None, specific=True):
+    def get_chgcap(self, normcyc=None, specific=False):
         '''
         Returns the cycle numbers and charge capacity
         '''

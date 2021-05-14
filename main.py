@@ -45,7 +45,9 @@ if fdata is not None:
              """)
     
     plot_opts = st.sidebar.selectbox("What would you like to plot?",
-                                     ('Discharge capacity', 'V-Q', 
+                                     ('Discharge capacity', 
+                                      #'Specific discharge capacity',
+                                      'V-Q', 
                                       'dQ/dV'))
     
 
@@ -115,6 +117,10 @@ if fdata is not None:
     elif plot_opts == 'Discharge capacity':
         x, y = nd.get_discap()
         p.circle(x, y, size=4, color="black", alpha=0.75)
+        
+    #elif plot_opts == 'Discharge capacity':
+        #x, y = nd.get_discap(specific=True)
+        #p.circle(x, y, size=4, color="black", alpha=0.75)
         #ax.plot(x, y, "o")
         #ax.set_xlabel('Cycle Number')
         #ax.set_ylabel('Specific Capacity (mAh/g)')
