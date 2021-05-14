@@ -175,7 +175,7 @@ class ParseNeware():
         chg_crates = []
         dis_rates = []
         dis_crates = []
-        cyc_id, dcap = self.get_discap(specific=False)
+        cyc_id, dcap = self.get_discap()
 #        ref_cap = np.amax(dcap)
         if ref_cap is None:
             max_inds = np.argpartition(dcap, -5)[-5:]
@@ -316,41 +316,49 @@ class ParseNeware():
 # For charge/discharge need to check that first/last step are at C_rate=rate
 
         return selected_cycs
+ 
 
-    def get_discap(self, normcyc=None, specific=False):
+    def get_discap(self, normcyc=None, active_mass=None):
         '''
-        Returns the cycle numbers and discharge capacity
+        Arguments
+            - normcyc : cycle number to use as normalization.
+            - active_mass : used to calc specific capacity, in units of grams.
+        
+        Returns
+            - cycle numbers
+            - discharge capacity or specific capacity if active_mass is passed.
         '''
-        if specific is True:
-            caplabel = 'Specific_Capacity-DChg'
-        else:
-            caplabel = 'Cap_DChg'
+        
+        cap = self.cyc['Cap_DChg']
+        
+        if active_mass is not None:
+            cap = cap / active_mass
 
         if normcyc is not None:
             normcyc = int(normcyc)
-            cap = self.cyc[caplabel]
+            #cap = self.cyc[caplabel]
             return self.cyc['Cycle_ID'], cap / cap[normcyc]
 
         else:
-            return self.cyc['Cycle_ID'], self.cyc[caplabel]
+            return self.cyc['Cycle_ID'], cap
             #return self.cyc['Cycle_ID'], self.cyc['Cap_DChg']
 
-    def get_chgcap(self, normcyc=None, specific=False):
+    def get_chgcap(self, normcyc=None, active_mass=None):
         '''
         Returns the cycle numbers and charge capacity
         '''
-        if specific is True:
-            caplabel = 'Specific_Capacity-Chg'
-        else:
-            caplabel = 'Cap_Chg'
+        
+        cap = self.cyc['Cap_Chg']
+        
+        if active_mass is not None:
+            cap = cap / active_mass
 
         if normcyc is not None:
             normcyc = int(normcyc)
-            cap = self.cyc[caplabel]
             return self.cyc['Cycle_ID'], cap / cap[normcyc]
-
+        
         else:
-            return self.cyc['Cycle_ID'], self.cyc[caplabel]
+            return self.cyc['Cycle_ID'], cap
 
     def get_deltaV(self, normcyc=None, cycnums=None):
         '''
@@ -401,7 +409,7 @@ class ParseNeware():
         else:
             return cycle_nums, dV
 
-    def get_vcurve(self, cycnum=-1, cyctype='cycle'):
+    def get_vcurve(self, cycnum=-1, cyctype='cycle', active_mass=None):
         '''
         Get voltage curve (cap, V) for a specific cycle number (cycnum).
         TODO: Need to deal with error handling properly.
@@ -423,29 +431,33 @@ class ParseNeware():
         if cyctype == 'charge':
             chg = cycle.loc[cycle['Step_ID'] == stepnums[0]]
             voltage = chg['Voltage'].values
-            capacity = chg['Capacity_Density'].values
+            capacity = chg['Capacity'].values
 
         elif cyctype == 'discharge':
             dis = cycle.loc[cycle['Step_ID'] == stepnums[-1]]
             voltage = dis['Voltage'].values
-            capacity = dis['Capacity_Density'].values
+            capacity = dis['Capacity'].values
             
         elif cyctype == 'cycle':
             chg = cycle.loc[cycle['Step_ID'] == stepnums[0]]
             Vchg = chg['Voltage'].values
-            Cchg = chg['Capacity_Density'].values
+            Cchg = chg['Capacity'].values
 
             dis = cycle.loc[cycle['Step_ID'] == stepnums[-1]]
             Vdchg = dis['Voltage'].values
-            Cdchg = dis['Capacity_Density'].values
+            Cdchg = dis['Capacity'].values
 
             voltage = np.concatenate((Vchg, Vdchg))
             capacity = np.concatenate((Cchg, -Cdchg+Cchg[-1]))
+            
+        if active_mass is not None:
+            return capacity / active_mass, voltage
+        else:
+            return capacity, voltage
 
-        return capacity, voltage
 
-
-    def get_dQdV(self, cycnum=-1, cyctype='cycle', avgstride=None):
+    def get_dQdV(self, cycnum=-1, cyctype='cycle', active_mass=None,
+                 avgstride=None):
         '''
         Get dQdV for specific cycle. Returns charge and discharge together.
         TODO: Add running average. 

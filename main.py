@@ -36,6 +36,31 @@ fdata = st.file_uploader("Load your Neware file here!")
 def read_data(uploaded_bytes, cell_id):
     return ParseNeware(cell_id, all_lines=uploaded_bytes)
 
+@st.cache(persist=True)
+def voltage_curves(cycnums, active_mass=None):
+    cap_list = []
+    volt_list = []
+    for i in range(len(cycnums)):
+        cap, volt = nd.get_vcurve(cycnum=cycnums[i], active_mass=active_mass)
+        cap_list.append(cap)
+        volt_list.append(volt)
+    
+    return cap_list, volt_list
+
+        
+@st.cache(persist=True)
+def dQdV(cycnums, avgstride=None, active_mass=None):
+    volt_list = []
+    dqdv_list = []
+    for i  in range(len(cycnums)):
+        volt, dqdv = nd.get_dQdV(cycnum=cycnums[i], active_mass=active_mass,
+                                 avgstride=smooth)
+        volt_list.append(volt)
+        dqdv_list.append(dqdv)
+
+    return volt_list, dqdv_list
+
+
 if fdata is not None:
     #nd = ParseNeware("Cell_ID", all_lines=fdata)
     nd = read_data(fdata, "Cell_ID")
@@ -70,6 +95,12 @@ if fdata is not None:
     st.write("Plotting {0} cycles within range: ({1}, {2})".format(rate,
                                                                cyc_range[0],
                                                                cyc_range[1]))
+    
+    active_mass = st.sidebar.number_input("Active material mass (in grams):")
+    if active_mass == 0.0:
+        active_mass = None
+    else:
+        st.write("Calculating specific capacity using {} g active material".format(active_mass))
     #cycnums = np.arange(cyc_range[0], cyc_range[1])
     #st.write("Cycle numbers", cycnums)
     cmap = st.sidebar.selectbox("Color pallette",
@@ -92,31 +123,40 @@ if fdata is not None:
 #    with plt.style.context('grapher'):
 #        fig, ax = plt.subplots(figsize=(5,4))
     #curdoc().theme = 'dark_minimal' # not working
-    p = figure(plot_width=800, plot_height=400,
-               x_axis_label='Cycle Number',
-               y_axis_label='Capacity (mAh)')
+    p = figure(plot_width=800, plot_height=400)
     
     if plot_opts == 'V-Q':
-        for i in range(len(cycnums)):
-            x, y = nd.get_vcurve(cycnum=cycnums[i])
+        caps, volts = voltage_curves(cycnums, active_mass=active_mass)
+        
+        if active_mass is not None:
+            p.xaxis.axis_label = 'Specific Capacity (mAh/g)'
+        else:
             p.xaxis.axis_label = 'Capacity (mAh)'
-            p.yaxis.axis_label = 'Voltage (V)'
-            p.line(x, y, color=colors[i], line_width=2.0)
-            #ax.plot(x, y, color=colors[i])
-        #ax.set_xlabel('Capacity (mAh)')
-        #ax.set_ylabel('Voltage (V)')
+        p.yaxis.axis_label = 'Voltage (V)'
+        for cap, volt, color in zip(caps, volts, colors):
+            p.line(cap, volt, color=color, line_width=2.0)
+
+
     elif plot_opts == 'dQ/dV':
-        for i  in range(len(cycnums)):
-            x, y = nd.get_dQdV(cycnum=cycnums[i], avgstride=smooth)
-            p.xaxis.axis_label = 'Voltage (V)'
+        volts, dqdvs = dQdV(cycnums, active_mass=active_mass,
+                            avgstride=smooth)
+        
+        p.xaxis.axis_label = 'Voltage (V)'
+        if active_mass is not None:
+            p.yaxis.axis_label = 'dQ/dV (mAh/V/g)'
+        else:
             p.yaxis.axis_label = 'dQ/dV (mAh/V)'
-            p.line(x,y, color=colors[i], line_width=2.0)
-            #ax.plot(x, y, color=colors[i])
-        #ax.set_xlabel('Voltage (V)')
-        #ax.set_ylabel('dQ/dV (mAh/V)')
+        for volt, dqdv, color in zip(volts, dqdvs, colors):
+            p.line(volt, dqdv, color=color, line_width=2.0)
+
     elif plot_opts == 'Discharge capacity':
-        x, y = nd.get_discap()
-        p.circle(x, y, size=4, color="black", alpha=0.75)
+        cycs, dcap = nd.get_discap(active_mass=active_mass)
+        if active_mass is not None:
+            p.yaxis.axis_label = 'Specific Capacity (mAh/g)'
+        else:
+            p.yaxis.axis_label = 'Capacity (mAh)'
+        p.xaxis.axis_label = 'Cycle Number'
+        p.circle(cycs, dcap, size=4, color="black", alpha=0.75)
         
     #elif plot_opts == 'Discharge capacity':
         #x, y = nd.get_discap(specific=True)
