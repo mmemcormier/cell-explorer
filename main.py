@@ -25,6 +25,8 @@ import matplotlib
 #sh.copy("{}/mpl_styles/grapher.mplstyle".format(cwd),
 #        "{}/stylelib/grapher.mplstyle".format(cfgdir))
 
+# The below HACK still does not solve the failure of Streamlit when 
+# running on Streamlit share. Large files crash! 
 # HACK This only works when we've installed streamlit with pipenv, so the
 # permissions during install are the same as the running process
 STREAMLIT_STATIC_PATH = Path(st.__path__[0]) / 'static'

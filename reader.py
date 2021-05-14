@@ -115,9 +115,9 @@ class ParseNeware():
                 recheader = recheader + '\t{}'.format(l)
 
         # Create header line for cycle, step, and record data
-        cyc = ['{}\n'.format(cycheader)]
-        step = ['{}\n'.format(stepheader)]
-        rec = ['{}\n'.format(recheader)]
+        self.cyc = ['{}\n'.format(cycheader)]
+        self.step = ['{}\n'.format(stepheader)]
+        self.rec = ['{}\n'.format(recheader)]
 
         # Separate cycle, step, and record data and write to 
         # file (needs to be changed to tmpfile) to be read 
@@ -130,14 +130,14 @@ class ParseNeware():
             nlws = len(line) - len(line.lstrip())
             if nlws == cyc_nlws:
                 cycnum = l[0]
-                cyc.append(line)
+                self.cyc.append(line)
 
             elif nlws == step_nlws: 
                 stepnum = l[0]
-                step.append('{0}{1}'.format(cycnum, line))
+                self.step.append('{0}{1}'.format(cycnum, line))
 
             else:
-                rec.append('{0}\t{1}{2}'.format(cycnum, stepnum, line[1:]))
+                self.rec.append('{0}\t{1}{2}'.format(cycnum, stepnum, line[1:]))
 
 #            if len(l) == cyclnlen:
 #                cycnum = l[0]
@@ -151,15 +151,15 @@ class ParseNeware():
         tmppath = Path(tmppath)
         #with open('cyc.dat', 'w') as f:
         with open(tmppath / 'cyc.dat', 'w') as f:
-            for l in cyc:
+            for l in self.cyc:
                 f.write(l)
         #with open('step.dat', 'w') as f:
         with open(tmppath / 'step.dat', 'w') as f:
-            for l in step:
+            for l in self.step:
                 f.write(l)
         #with open('rec.dat', 'w') as f:
         with open(tmppath / 'rec.dat', 'w') as f:
-            for l in rec:
+            for l in self.rec:
                 f.write(l)
 
         self.cyc = pd.read_csv(tmppath / 'cyc.dat', sep='\t+', header=0, engine='python')
@@ -460,7 +460,8 @@ class ParseNeware():
         else:
             return capacity, voltage
 
-
+    # TODO: try smoothing vcurves before taking dQ/dV instead of 
+    #       smoothing after taking derivative.
     def get_dQdV(self, cycnum=-1, cyctype='cycle', active_mass=None,
                  avgstride=None):
         '''
