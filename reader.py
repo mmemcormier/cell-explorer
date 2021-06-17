@@ -323,7 +323,7 @@ class ParseNeware():
         return selected_cycs
  
 
-    def get_discap(self, normcyc=None, active_mass=None):
+    def get_discap(self, cycnums=None, normcyc=None, active_mass=None):
         '''
         Arguments
             - normcyc : cycle number to use as normalization.
@@ -333,8 +333,11 @@ class ParseNeware():
             - cycle numbers
             - discharge capacity or specific capacity if active_mass is passed.
         '''
-        
-        cap = self.cyc['Cap_DChg']
+        if cycnums is not None:
+            cap = self.cyc[self.cyc['Cycle_ID'].isin(cycnums)]['Cap_DChg']
+        else: 
+            cap = self.cyc['Cap_DChg']
+            cycnums = self.cyc['Cycle_ID']
         
         if active_mass is not None:
             cap = cap / active_mass
@@ -342,10 +345,10 @@ class ParseNeware():
         if normcyc is not None:
             normcyc = int(normcyc)
             #cap = self.cyc[caplabel]
-            return self.cyc['Cycle_ID'], cap / cap[normcyc]
+            return cycnums, cap / cap[normcyc]
 
         else:
-            return self.cyc['Cycle_ID'], cap
+            return cycnums, cap
             #return self.cyc['Cycle_ID'], self.cyc['Cap_DChg']
 
     def get_chgcap(self, normcyc=None, active_mass=None):

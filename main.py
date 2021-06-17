@@ -161,7 +161,7 @@ if fdata is not None:
             p.line(volt, dqdv, color=color, line_width=2.0)
 
     elif plot_opts == 'Discharge capacity':
-        cycs, dcap = nd.get_discap(active_mass=active_mass)
+        cycs, dcap = nd.get_discap(cycnums=cycnums, active_mass=active_mass)
         if active_mass is not None:
             p.yaxis.axis_label = 'Specific Capacity (mAh/g)'
         else:
