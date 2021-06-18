@@ -75,6 +75,8 @@ def dQdV(cycnums, avgstride=None, active_mass=None):
 if fdata is not None:
     #nd = ParseNeware("Cell_ID", all_lines=fdata)
     nd = read_data(fdata, "Cell_ID")
+    st.write("Found {} charge C-rates".format(nd.chg_crates))
+    st.write("Found {} discharge C-rates".format(nd.dis_crates))
     
     st.write("""
              ### Successfully loaded Neware file.
@@ -87,16 +89,20 @@ if fdata is not None:
                                       'dQ/dV'))
     
 
-    
-    rates = ['All'] + nd.get_rates()
+    rate_type = st.sidebar.selectbox("For which cycle component do you want to select rates?",
+                                     ('cycle', 'charge', 'discharge'))
+    type_rates = nd.get_rates(cyctype=rate_type)
+    rates = ['All'] + type_rates
+    st.write("Found {} {} rates.".format(rates, rate_type))
     rate = st.sidebar.selectbox("Which C-rate would you like to see?",
                                 tuple(rates))
+    
     
     ncycs = nd.get_ncyc()
     if rate == 'All':
         cyc_nums = np.arange(1, ncycs+1)
     else:
-        cyc_nums = np.array(nd.select_by_rate(rate))
+        cyc_nums = np.array(nd.select_by_rate(rate, cyctype=rate_type))
         
 
     cyc_range = st.sidebar.slider("Cycle Numbers", 1, ncycs, (1, ncycs), 1)

@@ -269,15 +269,18 @@ class ParseNeware():
         if cyctype not in CYC_TYPES:
             raise ValueError('cyctype must be one of {0}'.format(CYC_TYPES))
         if cyctype == 'charge':
-            return self.chg_crates
-        elif cyctype == 'discharge':
-            return self.dis_crates
-        elif cyctype == 'cycle':
             rates = self.chg_crates
-            for r in self.dis_crates:
-                if r not in rates:
-                    rates.append(r)
-            return rates
+            #return self.chg_crates
+        elif cyctype == 'discharge':
+            rates = self.dis_crates
+            #return self.dis_crates
+        elif cyctype == 'cycle':
+            #rates = self.chg_crates
+            rates = [r for r in self.chg_crates if r in self.dis_crates]
+            #for r in self.dis_crates:
+            #    if r not in rates:
+            #        rates.append(r)
+        return rates
 
     def get_ncyc(self):
         '''
@@ -297,12 +300,38 @@ class ParseNeware():
 
         if cyctype not in CYC_TYPES:
             raise ValueError('cyctype must be one of {0}'.format(CYC_TYPES))
+            
+        if cyctype == 'charge':
+            if rate not in self.chg_crates:
+                raise ValueError('There are no {} charges. Select a different rate.'.format(rate))
+        
+        if cyctype == 'discharge':
+            if rate not in self.dis_crates:
+                raise ValueError('There are no {} discharges. Select a different rate.'.format(rate))
 
         selected_cycs = []
         stepdata = self.step.loc[self.step['C_rate'] == rate]
+        rate_stepnums= self.step.loc[self.step['C_rate'] == rate]['Step_ID'].unique()
+        print(len(rate_stepnums))
         cycnums = stepdata['Cycle_ID'].unique()
         for i in range(len(cycnums)):
-            stepnums = stepdata.loc[stepdata['Cycle_ID'] == cycnums[i]].values
+            stepnums = self.step.loc[self.step['Cycle_ID'] == cycnums[i]]['Step_ID'].unique()
+            
+            if cyctype == 'cycle':
+                if (stepnums[0] in rate_stepnums) & (stepnums[-1] in rate_stepnums):
+                #if len(stepnums) >= 2:
+                    selected_cycs.append(cycnums[i])
+            elif cyctype == 'charge':
+                if stepnums[0] in rate_stepnums:
+                    selected_cycs.append(cycnums[i])
+            elif cyctype == 'discharge':
+                if stepnums[-1] in rate_stepnums:
+                    selected_cycs.append(cycnums[i])
+            
+        #for i in range(len(cycnums)):
+            #stepnums = stepdata.loc[stepdata['Cycle_ID'] == cycnums[i]].values
+            #stepnums = stepdata.loc[stepdata['Cycle_ID'] == cycnums[i]]['Step_ID'].unique()
+            '''
             if cyctype == 'cycle':
                 if len(stepnums) >= 2:
                     selected_cycs.append(cycnums[i])
@@ -316,6 +345,7 @@ class ParseNeware():
                 step = self.step.loc[self.step['Step_ID'] == stepnums[-1]]
                 if step['C_rate'].values == rate:
                     selected_cycs.append(cycnums[i])
+            '''
 
 # For cyctype='cycle' need to check that first and last step both have same rate.
 # For charge/discharge need to check that first/last step are at C_rate=rate
